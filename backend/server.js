@@ -3,6 +3,28 @@ const exp = require('express')
 const app = exp()
 require('dotenv').config()//process.env.PORT
 
+const mongoClient = require('mongodb').MongoClient;
+
+//connect to DB
+mongoClient.connect(process.env.DB_URL)
+.then(client=>{
+
+    const blogappdb = client.db('blogappdb')
+
+    const usersCollection = blogappdb.collection("usersCollection")
+    const adminsColecction = blogappdb.collection("adminsCollection")
+    const authorsColecction = blogappdb.collection("authorsCollection")
+    const articlesCollection = blogappdb.collection("articlesCollection")
+
+    app.set('usersCollection',usersCollection);
+    app.set('adminsCollection',adminsColecction);
+    app.set('authorsCollection',authorsColecction);
+    app.set('articlesCollection',articlesCollection);
+
+    console.log("DB connection success")
+})
+.catch(err=>console.log("error in connection: ",err.message ));
+
 
 //to parse the body of req
 app.use(exp.json());
@@ -23,7 +45,7 @@ app.use('/admin-api',adminApp)
 
 //express error handler
 app.use((err,req,res,next)=>{
-    res.send({errorMessage:"error", payload:err});
+    res.send({errorMessage:"error", payload:err.message});
 })
 
 //assign port number

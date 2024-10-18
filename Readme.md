@@ -2,6 +2,10 @@
 
 In this i am trying to implement what i learnt in training program
 
+
+
+
+
 ## techonologies 
 
   ###  frontend

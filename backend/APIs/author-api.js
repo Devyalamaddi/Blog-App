@@ -5,14 +5,18 @@ const authorApp = exp.Router() //mini-express app so Router
 
 const bcryptjs = require('bcryptjs')
 const jwt = require('jsonwebtoken')
+const expressAsyncHandler = require('express-async-handler');
 require('dotenv').config();
 // authorApp.get('/test-author',(req,res)=>{
 //     res.send({message:"This is from author api"});
 // })
 
 let authorsCollection;
+let articlesCollection;
 authorApp.use((req,res,next)=>{
     authorsCollection = req.app.get('authorsCollection');
+    articlesCollection = req.app.get('articlesCollection');
+
     next();
 })
 
@@ -60,14 +64,53 @@ authorApp.post('/authorlogin',async(req,res)=>{
     }
 })
 
-//to view all articles
-authorApp.get('/view-articles',async(req,res)=>{
-    const articlesCollection = req.app.get('articlesCollection');
 
-    let articlesList = await articlesCollection.find().toArray();
+// adding new article by author
 
+authorApp.post('/article',expressAsyncHandler(async(req,res)=>{
+    const newArticle=req.body;
+
+    //post it in articlesCollections
+    await articlesCollection.insertOne(newArticle);
+    res.send({message:"new Article is created"});
+
+}))
+
+//modify article by author
+
+authorApp.put('/article',expressAsyncHandler(async(req,res)=>{
+    const modifiedArticle=req.body;
+    
+    //update by article id
+    let result = await articlesCollection.updateOne({articleId:modifiedArticle.articleId},{$set:{...modifiedArticle}})
+    console.log(result)
+    res.send({message:"article modified"})
+}))
+
+//delete article by articleId
+        //soft delete is modifying action we just hide the article, instead deleteing, for restoring it later.
+
+authorApp.put('/article/:articleId',expressAsyncHandler(async(req,res)=>{
+    const articleIdFromUrl=req.params.articleId;
+
+    const articleToDelete=req.body;
+
+    let modifiedResults=await articlesCollection.updateOne({articleId:articleIdFromUrl},{$set:{...articleToDelete}})
+    res.send({message:"article deleted"});
+    console.log(modifiedResults)
+}))
+
+
+
+//to view all articles **by author**
+authorApp.get('/view-articles/:username',expressAsyncHandler(async(req,res)=>{
+    
+    const authorName = req.params.username;
+
+
+    let articlesList = await articlesCollection.find({$and:[{username:authorName},{status:true}]}).toArray();
     res.send({message:"all articles",payload:articlesList});
-})
+}))
 
 //export authorApp
 module.exports =authorApp;

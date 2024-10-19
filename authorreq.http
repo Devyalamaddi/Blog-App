@@ -1,0 +1,24 @@
+
+###author api reqs
+post http://localhost:4000/author-api/authorregistration
+Content-Type: application/json
+
+{
+    "userType":"author",
+    "username":"sunny-author",
+    "password":"sunny",
+    "email":"dev@mail.com"
+}
+
+###
+post http://localhost:4000/author-api/authorlogin
+Content-Type: application/json
+
+{
+    "userType":"author",
+    "username":"dev-author",
+    "password":"dev"
+}
+
+###
+get http://localhost:4000/author-api/view-articles

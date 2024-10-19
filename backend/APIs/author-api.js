@@ -7,6 +7,8 @@ const bcryptjs = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const expressAsyncHandler = require('express-async-handler');
 require('dotenv').config();
+const verifyToken=require('../middlewares/verifyToken');
+
 // authorApp.get('/test-author',(req,res)=>{
 //     res.send({message:"This is from author api"});
 // })
@@ -20,7 +22,7 @@ authorApp.use((req,res,next)=>{
     next();
 })
 
-//author registration
+//author registration(public)
 authorApp.post('/authorregistration',async(req,res)=>{
     // console.log(req.body)
 
@@ -40,7 +42,7 @@ authorApp.post('/authorregistration',async(req,res)=>{
     }
 });
 
-//author login
+//author login(public)
 authorApp.post('/authorlogin',async(req,res)=>{
     // console.log(req.body)
 
@@ -65,9 +67,8 @@ authorApp.post('/authorlogin',async(req,res)=>{
 })
 
 
-// adding new article by author
-
-authorApp.post('/article',expressAsyncHandler(async(req,res)=>{
+// adding new article by author(protected)
+authorApp.post('/article',verifyToken,expressAsyncHandler(async(req,res)=>{
     const newArticle=req.body;
 
     //post it in articlesCollections
@@ -76,9 +77,8 @@ authorApp.post('/article',expressAsyncHandler(async(req,res)=>{
 
 }))
 
-//modify article by author
-
-authorApp.put('/article',expressAsyncHandler(async(req,res)=>{
+//modify article by author(protected)
+authorApp.put('/article',verifyToken,expressAsyncHandler(async(req,res)=>{
     const modifiedArticle=req.body;
     
     //update by article id
@@ -90,7 +90,7 @@ authorApp.put('/article',expressAsyncHandler(async(req,res)=>{
 //delete article by articleId
         //soft delete is modifying action we just hide the article, instead deleteing, for restoring it later.
 
-authorApp.put('/article/:articleId',expressAsyncHandler(async(req,res)=>{
+authorApp.put('/article/:articleId',verifyToken,expressAsyncHandler(async(req,res)=>{
     const articleIdFromUrl=req.params.articleId;
 
     const articleToDelete=req.body;
@@ -102,8 +102,8 @@ authorApp.put('/article/:articleId',expressAsyncHandler(async(req,res)=>{
 
 
 
-//to view all articles **by author**
-authorApp.get('/view-articles/:username',expressAsyncHandler(async(req,res)=>{
+//to view all articles **by author**(protected)
+authorApp.get('/view-articles/:username',verifyToken,expressAsyncHandler(async(req,res)=>{
     
     const authorName = req.params.username;
 

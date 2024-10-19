@@ -23,3 +23,12 @@ Content-Type: application/json
 get http://localhost:4000/user-api/view-articles
 
 
+### write comment
+post http://localhost:4000/user-api/comment/1729319484
+Content-Type: application/json
+
+{
+    
+    "username":"dev",
+    "comment":"amazing content"
+}

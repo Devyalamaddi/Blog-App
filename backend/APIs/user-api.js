@@ -7,6 +7,7 @@ const bcryptjs = require('bcryptjs')
 const expressAsyncHandler = require('express-async-handler');
 const jwt = require('jsonwebtoken')
 require('dotenv').config();
+const verifyToken=require('../middlewares/verifyToken');
 
 // userApp.get('/test-user',(req,res)=>{
 //     res.send({message:"This is from user api"});
@@ -14,12 +15,14 @@ require('dotenv').config();
 
 //get usersCollection
 let usersCollection;
+let articlesCollection;
 userApp.use((req,res,next)=>{
     usersCollection =req.app.get('usersCollection');
+    articlesCollection = req.app.get("articlesCollection")
     next()
 })
 
-//user registration route
+//user registration route(public)
 userApp.post('/userregistration', expressAsyncHandler(async(req,res)=>{
 
     //get user details from req
@@ -46,7 +49,7 @@ userApp.post('/userregistration', expressAsyncHandler(async(req,res)=>{
 }))
 
 
-//user login route
+//user login route(public)
 userApp.post('/userlogin',expressAsyncHandler(async(req,res)=>{
     // console.log(req.body)
 
@@ -71,16 +74,26 @@ userApp.post('/userlogin',expressAsyncHandler(async(req,res)=>{
 }))
 
 
-//get articles of all users
+//get articles of all users(protected)
 
-userApp.get('/view-articles',expressAsyncHandler(async(req,res)=>{
+userApp.get('/view-articles',verifyToken,expressAsyncHandler(async(req,res)=>{
 
-    let articlesCollection = req.app.get("articlesCollection")
 
     let articlesList = await articlesCollection.find({status:true}).toArray()
 
     res.send({message:"Articles list",payload:articlesList})
 
+}))
+
+
+//post comments for an article by articleId(protected)
+userApp.post('/comment/:articleId',verifyToken,expressAsyncHandler(async(req,res)=>{
+    const userComment = req.body
+    articleIdFromUrl = req.params.articleId
+    //insert userComment obj in comment array in articlesCollection
+ let result = await articlesCollection.updateOne({$and:[{articleId:articleIdFromUrl},{status:true}]},{$addToSet:{comments:userComment}})
+ res.send({message:"comment posted"})
+ console.log(result)
 }))
 
 //export userApp

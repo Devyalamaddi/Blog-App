@@ -77,7 +77,7 @@ userApp.get('/view-articles',expressAsyncHandler(async(req,res)=>{
 
     let articlesCollection = req.app.get("articlesCollection")
 
-    let articlesList = await articlesCollection.find().toArray()
+    let articlesList = await articlesCollection.find({status:true}).toArray()
 
     res.send({message:"Articles list",payload:articlesList})
 

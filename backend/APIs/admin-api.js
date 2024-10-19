@@ -65,7 +65,7 @@ adminApp.post('/adminlogin',expressAsyncHandler(async(req,res)=>{
 adminApp.get('/view-articles',expressAsyncHandler(async(req,res)=>{
     const articlesCollection = req.app.get('articlesCollection');
 
-    let articlesList = await articlesCollection.find().toArray();
+    let articlesList = await articlesCollection.find({status:true}).toArray();
 
     res.send({message:"all articles",payload:articlesList});
 }))

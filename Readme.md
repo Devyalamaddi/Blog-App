@@ -1,6 +1,6 @@
 # Blog App
 
-In this i am trying to implement what i learnt in training program
+In this I am trying to implement what I learnt in training program
 
 ## techonologies 
 

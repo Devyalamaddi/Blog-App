@@ -12,12 +12,12 @@ const UserLogin = () => {
     e.preventDefault();
     try {
       const response = await axios.post('http://localhost:4000/user-api/userlogin', {
+        userType: 'user',
         username,
-        password,
+        password
       });
       setMessage(response.data.message);
       if (response.data.token) {
-        // Store token or perform further actions
         navigate('/articles');
       }
     } catch (error) {

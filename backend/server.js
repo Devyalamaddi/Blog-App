@@ -4,7 +4,10 @@ const app = exp()
 require('dotenv').config()//process.env.PORT
 
 const mongoClient = require('mongodb').MongoClient;
+const cors = require('cors');
 
+// Use CORS middleware
+app.use(cors());
 //connect to DB
 mongoClient.connect(process.env.DB_URL)
 .then(client=>{

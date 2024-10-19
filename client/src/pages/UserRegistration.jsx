@@ -1,16 +1,25 @@
 import { useState } from 'react';
-import { registerUser } from '../services/api';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const UserRegistration = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
+  const navigate = useNavigate();
 
-  const handleRegister = async (e) => {
+  const handleRegistration = async (e) => {
     e.preventDefault();
     try {
-      const res = await registerUser({ username, password });
-      setMessage(res.data.message);
+      const response = await axios.post('http://localhost:4000/user-api/userregistration', {
+        userType: 'user',
+        username,
+        password,
+        email
+      });
+      setMessage(response.data.message);
+      navigate('/user-login');
     } catch (error) {
       setMessage('Registration failed');
     }
@@ -19,7 +28,7 @@ const UserRegistration = () => {
   return (
     <div>
       <h2>User Registration</h2>
-      <form onSubmit={handleRegister}>
+      <form onSubmit={handleRegistration}>
         <input
           type="text"
           placeholder="Username"
@@ -31,6 +40,12 @@ const UserRegistration = () => {
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+        />
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
         />
         <button type="submit">Register</button>
       </form>

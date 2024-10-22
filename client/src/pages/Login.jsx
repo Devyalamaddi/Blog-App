@@ -57,7 +57,7 @@ function Login() {
           </form>
 
           <div className="d-flex justify-center align-center mb-3 mt-0">
-            <p>Not yet registered?</p> <Link to='/signup' className='nav-link text-blue-600'>Register here</Link>
+            <p>Already registered?</p> <Link to='/signup' className='nav-link text-blue-600'>Login here</Link>
           </div>
 
         </div>

@@ -7,7 +7,7 @@ const mongoClient = require('mongodb').MongoClient;
 const path = require('path')
 
 //deploy react build in this server
-app.use(exp.static(path.join(__dirname,'../client/build')))
+app.use(exp.static(path.join(__dirname,'../client/dist')))
 
 //connect to DB
 mongoClient.connect(process.env.DB_URL)
@@ -49,7 +49,7 @@ app.use('/admin-api',adminApp)
 
 //deals with page refresh
 app.use((req,res,next)=>{
-    res.sendFile(path.join(__dirname,'../client/build/index.html'))
+    res.sendFile(path.join(__dirname,'../client/dist/index.html'))
 })
 
 

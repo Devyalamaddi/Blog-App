@@ -34,7 +34,7 @@ adminApp.post('/adminregistration',expressAsyncHandler(async(req,res)=>{
 
         await adminsCollection.insertOne(newAdmin);
 
-        res.send({message:"new admin created"});
+        res.send({message:"admin created"});
     }
 }));
 

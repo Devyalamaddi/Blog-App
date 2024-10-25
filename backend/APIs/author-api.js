@@ -38,7 +38,7 @@ authorApp.post('/authorregistration',async(req,res)=>{
         newAuthor.password=hashedpassword;
 
         await authorsCollection.insertOne(newAuthor);
-        res.send({message:"author created!"});
+        res.send({message:"author created"});
     }
 });
 

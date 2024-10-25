@@ -61,7 +61,7 @@ authorApp.post('/authorlogin',async(req,res)=>{
 
             const token = jwt.sign({username:dbAuthor.username},process.env.SK_Author,{expiresIn:'1d'});
 
-            res.send({message:"author login successful",token:token,author:dbAuthor});
+            res.send({message:"author login successful",token:token,user:dbAuthor});
         }
     }
 })

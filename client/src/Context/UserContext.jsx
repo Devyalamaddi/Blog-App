@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect } from 'react';
+import { createContext, useState } from 'react';
 import axios from 'axios';
 
 export const UserContextObj = createContext();
@@ -8,6 +8,8 @@ function UserContext({ children }) {
   const [admins, setAdmins] = useState([]);
   const [authors, setAuthors] = useState([]);
   const [error, setErrors] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [loginStatus, setLoginStatus] = useState(false);
 
   // Registration functions
   async function registerUser(userObj) {
@@ -43,8 +45,47 @@ function UserContext({ children }) {
     }
   }
 
+  async function loginUser(userObj) {
+    try {
+      const res = await axios.post('http://localhost:4000/user-api/userlogin', userObj);
+      setCurrentUser(res.data.user);
+      return res;
+    } catch (err) {
+      setErrors(err.message);
+      throw new Error(err.message);
+    }
+  }
+
+  async function loginAdmin(userObj) {
+    try {
+      const res = await axios.post('http://localhost:4000/admin-api/adminlogin', userObj);
+      setCurrentUser(res.data.user);
+      return res;
+    } catch (err) {
+      setErrors(err.message);
+      throw new Error(err.message);
+    }
+  }
+
+  async function loginAuthor(userObj) {
+    try {
+      const res = await axios.post('http://localhost:4000/author-api/authorlogin', userObj);
+      setCurrentUser(res.data.user);
+      return res;
+    } catch (err) {
+      setErrors(err.message);
+      throw new Error(err.message);
+    }
+  }
+
+  async function logout(){
+    localStorage.removeItem('currentUser');
+    setLoginStatus(false);
+    setCurrentUser(null);
+  }
+
   return (
-    <UserContextObj.Provider value={{ registerUser, registerAdmin, registerAuthor, error }}>
+    <UserContextObj.Provider value={{ registerUser, registerAdmin, registerAuthor, loginUser, loginAdmin, loginAuthor, loginStatus, setLoginStatus, error, setCurrentUser, currentUser, logout }}>
       {children}
     </UserContextObj.Provider>
   );

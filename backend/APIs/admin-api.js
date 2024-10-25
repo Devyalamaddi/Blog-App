@@ -56,7 +56,7 @@ adminApp.post('/adminlogin',expressAsyncHandler(async(req,res)=>{
             res.send({message:"incorrect password"});
         }else{
             const token = jwt.sign({username:dbAdmin.username},process.env.SK_admin,{expiresIn:'1d'});
-            res.send({message:"admin Login successful",token:token,admin:dbAdmin});
+            res.send({message:"admin Login successful",token:token,user:dbAdmin});
         }
     }
 }))

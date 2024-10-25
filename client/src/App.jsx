@@ -4,6 +4,9 @@ import Login from './pages/Login';
 import Home from './pages/Home';
 import Signup from './pages/Signup'
 import Rootlayout from '../src/components/Rootlayout'
+import UserProfile from './pages/UserProfile';
+import AdminProfile from './pages/AdminProfile';
+import AuthorProfile from './pages/AuthorProfile';
 import {} from './Context/UserContext';
 
 function App() {
@@ -23,6 +26,18 @@ function App() {
         {
           path:'signup',
           element:<Signup/>
+        },
+        {
+          path:'userprofile/:username',
+          element:<UserProfile/>
+        },
+        {
+          path:'adminprofile/:username',
+          element:<AdminProfile/>
+        },
+        {
+          path:'authorprofile/:username',
+          element:<AuthorProfile/>
         }
       ]
     }

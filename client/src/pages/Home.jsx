@@ -4,7 +4,7 @@ import './Home.css';
 
 function Home(){
   return (
-    <div className="home-container">
+    <div className="p-5">
       {/* Hero Section */}
       <div className="hero">
         <h1>Welcome to My Blog</h1>

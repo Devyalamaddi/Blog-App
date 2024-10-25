@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { useForm } from 'react-hook-form';
-import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
+import { UserContextObj } from '../Context/UserContext';
 
 function Signup() {
   const { register, handleSubmit, formState: { errors } } = useForm();
@@ -10,25 +10,28 @@ function Signup() {
   const [userType, setUserType] = useState('');
   const navigate = useNavigate();
 
+  // Import context registration functions
+  const { registerUser, registerAdmin, registerAuthor, error: contextError } = useContext(UserContextObj);
+
   async function submitRegisteredUser(userObj) {
     setRegistrationStatus(false);
 
     try {
-      let res;
+      let message;
       if (userObj.userType === 'user') {
-        res = await axios.post('http://localhost:4000/user-api/userregistration', userObj);
+        message = await registerUser(userObj);
       } else if (userObj.userType === 'admin') {
-        res = await axios.post('http://localhost:4000/admin-api/adminregistration', userObj);
+        message = await registerAdmin(userObj);
       } else if (userObj.userType === 'author') {
-        res = await axios.post('http://localhost:4000/author-api/authorregistration', userObj);
+        message = await registerAuthor(userObj);
       }
 
-      if (res.data.message.toLowerCase().includes('created')) {
+      if (message.toLowerCase().includes('created')) {
         setRegistrationStatus(true);
         setUserType(userObj.userType);
         setTimeout(() => navigate('/login'), 2000);
       } else {
-        setErr(res.data.message);
+        setErr(message);
       }
     } catch (error) {
       setErr('Error during registration');
@@ -37,19 +40,18 @@ function Signup() {
 
   return (
     <div className="container">
-      {
-        registrationStatus && (
-          <div className="alert alert-success w-50 mt-3 " role="alert">
-            Registered as {userType}
-          </div>
-        )
-      }
+      {registrationStatus && (
+        <div className="alert alert-success mx-auto w-50 mt-3" role="alert">
+          Registered as <strong className='display-4'>{userType}</strong>
+        </div>
+      )}
       <div className="d-flex justify-center">
         <div className='card bg-amber-500 mt-8'>
           <form className="form mt-5 p-12 pb-1 pt-1" onSubmit={handleSubmit(submitRegisteredUser)}>
             <h2 className="text-center display-3 mb-3">Register</h2>
 
             {err && <p className='text-danger'>{err}</p>}
+            {contextError && <p className='text-danger'>{contextError}</p>} {/* Display context errors if any */}
 
             <div className="user-radio d-flex justify-evenly">
               <p className="text-green-300 fw-semibold fs-5">Register as: </p>

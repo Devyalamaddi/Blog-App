@@ -16,6 +16,8 @@ if (savedUser) {
     <div className="container">
       <h1 className="display-3">{currentUser.username}</h1>
       <h3 className="display-5">{currentUser.email}</h3>
+
+      
     </div>
   );
 }

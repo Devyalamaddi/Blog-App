@@ -5,6 +5,9 @@ import './Home.css';
 function Home(){
   return (
     <div className="p-5">
+
+      <Link to="/">New Article</Link>
+
       {/* Hero Section */}
       <div className="hero">
         <h1>Welcome to My Blog</h1>

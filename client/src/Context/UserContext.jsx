@@ -10,6 +10,7 @@ function UserContext({ children }) {
   const [error, setErrors] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   const [loginStatus, setLoginStatus] = useState(false);
+  const [count,setCount] = useState(0);
   
 
   async function registerUser(userObj) {
@@ -87,8 +88,9 @@ function UserContext({ children }) {
     setCurrentUser(null);
   }
 
+
   return (
-    <UserContextObj.Provider value={{ registerUser, registerAdmin, registerAuthor, loginUser, loginAdmin, loginAuthor, loginStatus, setLoginStatus, error, setCurrentUser, currentUser, logout}}>
+    <UserContextObj.Provider value={{ registerUser, registerAdmin, registerAuthor, loginUser, loginAdmin, loginAuthor, loginStatus, setLoginStatus, error, setCurrentUser, currentUser, logout, count, setCount}}>
       {children}
     </UserContextObj.Provider>
   );

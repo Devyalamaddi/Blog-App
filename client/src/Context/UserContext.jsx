@@ -10,15 +10,15 @@ function UserContext({ children }) {
   const [error, setErrors] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   const [loginStatus, setLoginStatus] = useState(false);
+  
 
-  // Registration functions
   async function registerUser(userObj) {
     try {
       const res = await axios.post('http://localhost:4000/user-api/userregistration', userObj);
       setUsers([...users, res.data]);
       return res.data.message;
     } catch (err) {
-      setErrors(err.message);
+      setErrors && setErrors(err.message);
       throw new Error(err.message);
     }
   }
@@ -29,7 +29,7 @@ function UserContext({ children }) {
       setAdmins([...admins, res.data]);
       return res.data.message;
     } catch (err) {
-      setErrors(err.message);
+      setErrors && setErrors(err.message);
       throw new Error(err.message);
     }
   }
@@ -40,7 +40,7 @@ function UserContext({ children }) {
       setAuthors([...authors, res.data]);
       return res.data.message;
     } catch (err) {
-      setErrors(err.message);
+      setErrors && setErrors(err.message);
       throw new Error(err.message);
     }
   }
@@ -51,7 +51,7 @@ function UserContext({ children }) {
       setCurrentUser(res.data.user);
       return res;
     } catch (err) {
-      setErrors(err.message);
+      setErrors && setErrors(err.message);
       throw new Error(err.message);
     }
   }
@@ -62,7 +62,7 @@ function UserContext({ children }) {
       setCurrentUser(res.data.user);
       return res;
     } catch (err) {
-      setErrors(err.message);
+      setErrors && setErrors(err.message);
       throw new Error(err.message);
     }
   }
@@ -70,22 +70,25 @@ function UserContext({ children }) {
   async function loginAuthor(userObj) {
     try {
       const res = await axios.post('http://localhost:4000/author-api/authorlogin', userObj);
-      setCurrentUser(res.data.user);
+      const curUser = { ...res.data.user, token: res.data.token };
+      localStorage.setItem('token', curUser.token);
+      console.log(curUser);
       return res;
     } catch (err) {
-      setErrors(err.message);
+      setErrors && setErrors(err.message);
       throw new Error(err.message);
     }
   }
 
-  async function logout(){
+
+  function logout() {
     localStorage.removeItem('currentUser');
     setLoginStatus(false);
     setCurrentUser(null);
   }
 
   return (
-    <UserContextObj.Provider value={{ registerUser, registerAdmin, registerAuthor, loginUser, loginAdmin, loginAuthor, loginStatus, setLoginStatus, error, setCurrentUser, currentUser, logout }}>
+    <UserContextObj.Provider value={{ registerUser, registerAdmin, registerAuthor, loginUser, loginAdmin, loginAuthor, loginStatus, setLoginStatus, error, setCurrentUser, currentUser, logout}}>
       {children}
     </UserContextObj.Provider>
   );

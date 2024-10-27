@@ -6,7 +6,6 @@ function Home(){
   return (
     <div className="p-5">
 
-      <Link to="/">New Article</Link>
 
       {/* Hero Section */}
       <div className="hero">

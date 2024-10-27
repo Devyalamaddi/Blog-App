@@ -7,38 +7,48 @@ function Login() {
   const { register, handleSubmit, formState: { errors } } = useForm();
   const navigate = useNavigate();
   const { currentUser, setCurrentUser, loginUser, loginAdmin, loginAuthor, setErrors, loginStatus, setLoginStatus } = useContext(UserContextObj);
-  // const [LoginStatus, setLoginStatus] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
   async function submitRegisteredUser(userObj) {
-    console.log(userObj);
     try {
       let res;
-      if (userObj.userType === 'user') {
-        res = await loginUser(userObj);
-      } else if (userObj.userType === 'admin') {
-        res = await loginAdmin(userObj);
-      } else if (userObj.userType === 'author') {
-        res = await loginAuthor(userObj);
+
+      // Centralized API call based on userType
+      switch (userObj.userType) {
+        case 'user':
+          res = await loginUser(userObj);
+          break;
+        case 'admin':
+          res = await loginAdmin(userObj);
+          break;
+        case 'author':
+          res = await loginAuthor(userObj);
+          break;
+        default:
+          throw new Error('Invalid user type');
       }
-  
+
       if (res.status === 200) {
+        // Set user data and token to localStorage
         setCurrentUser(res.data.user);
+        localStorage.setItem('token', res.data.token); // Save token directly as a string
         setLoginStatus(true);
         localStorage.setItem('currentUser', JSON.stringify(res.data.user));
+        
+        // Navigate to the appropriate user profile
         navigate(`/${userObj.userType}profile/${res.data.user.username}`);
       } else {
         setErrorMessage(res.data.message || 'Login failed.');
         setLoginStatus(false);
       }
     } catch (err) {
-      // Ensure setErrors is used here for error handling
-      setErrors(err); // Correctly call setErrors to handle the error
-      setErrorMessage('An error occurred during login.'); // Optionally set an error message
+      console.error("Login error:", err); // Log the error for debugging
+      setErrors && setErrors(err.message);
+      setErrorMessage('An error occurred during login.'); // Generic error message
       setLoginStatus(false);
     }
   }
-  
+
   return (
     <div className="container">
       {loginStatus && currentUser && (
@@ -56,19 +66,13 @@ function Login() {
           <form className="form mt-5 p-12 pb-1 pt-1" onSubmit={handleSubmit(submitRegisteredUser)}>
             <h2 className="text-center display-3 mb-3">Login</h2>
             <div className="user-radio d-flex justify-evenly align-items-center">
-              <p className="text-green-300 fw-semibold fs-5">login as: </p>
-              <div className="user-radio d-flex gap-2">
-                <input type="radio" {...register('userType', { required: true })} id="user" value="user" />
-                <label htmlFor="user">User</label>
-              </div>
-              <div className="user-radio d-flex gap-2">
-                <input type="radio" {...register('userType', { required: true })} id="admin" value="admin" />
-                <label htmlFor="admin">Admin</label>
-              </div>
-              <div className="user-radio d-flex gap-2">
-                <input type="radio" {...register('userType', { required: true })} id="author" value="author" />
-                <label htmlFor="author">Author</label>
-              </div>
+              <p className="text-green-300 fw-semibold fs-5">Login as: </p>
+              {['user', 'admin', 'author'].map(type => (
+                <div className="user-radio d-flex gap-2" key={type}>
+                  <input type="radio" {...register('userType', { required: true })} id={type} value={type} />
+                  <label htmlFor={type}>{type.charAt(0).toUpperCase() + type.slice(1)}</label>
+                </div>
+              ))}
             </div>
             {errors.userType && <p className='text-green-800 text-center'>*Select any one</p>}
 
@@ -89,7 +93,7 @@ function Login() {
           </form>
 
           <div className="d-flex justify-center align-center mb-3 mt-0">
-            <p>Not registered yet?{' '}</p> 
+            <p>Not registered yet?{' '}</p>
             <Link to='/signup' className='nav-link text-blue-600'>Sign up here</Link>
           </div>
         </div>

@@ -1,116 +1,89 @@
-// create author-api app
-
 const exp = require('express');
-const authorApp = exp.Router() //mini-express app so Router
-
-const bcryptjs = require('bcryptjs')
-const jwt = require('jsonwebtoken')
+const authorApp = exp.Router();
+const bcryptjs = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const expressAsyncHandler = require('express-async-handler');
 require('dotenv').config();
-const verifyToken=require('../middlewares/verifyToken');
-
-// authorApp.get('/test-author',(req,res)=>{
-//     res.send({message:"This is from author api"});
-// })
+const verifyToken = require('../middlewares/verifyToken');
 
 let authorsCollection;
 let articlesCollection;
-authorApp.use((req,res,next)=>{
+authorApp.use((req, res, next) => {
     authorsCollection = req.app.get('authorsCollection');
     articlesCollection = req.app.get('articlesCollection');
-
     next();
-})
-
-//author registration(public)
-authorApp.post('/authorregistration',async(req,res)=>{
-    // console.log(req.body)
-
-    const newAuthor = req.body;
-
-    const dbAuthor = await authorsCollection.findOne({username:newAuthor.username});
-
-    if (dbAuthor !== null){
-        res.send({message:"author already exists"});
-    }else{
-        const hashedpassword =await bcryptjs.hash(newAuthor.password,7);
-
-        newAuthor.password=hashedpassword;
-
-        await authorsCollection.insertOne(newAuthor);
-        res.send({message:"author created"});
-    }
 });
 
-//author login(public)
-authorApp.post('/authorlogin',async(req,res)=>{
-    // console.log(req.body)
+// Author Registration
+authorApp.post('/authorregistration', expressAsyncHandler(async (req, res) => {
+    const newAuthor = req.body;
+    const dbAuthor = await authorsCollection.findOne({ username: newAuthor.username });
 
-    const authorCredObj = req.body
-
-    const dbAuthor = await authorsCollection.findOne({username:authorCredObj.username});
-    if (dbAuthor === null){
-        res.send({message:"invalid author"});
+    if (dbAuthor) {
+        res.status(409).send({ message: "Author already exists" });
+    } else {
+        newAuthor.password = await bcryptjs.hash(newAuthor.password, 7);
+        await authorsCollection.insertOne(newAuthor);
+        res.status(201).send({ message: "Author created successfully" });
     }
-    else{
-        const check = await bcryptjs.compare(authorCredObj.password,dbAuthor.password);
-        if(check===false){
-            res.send({message:"incorrect password"});
-        }
-        else{
+}));
 
-            const token = jwt.sign({username:dbAuthor.username},process.env.SK_Author,{expiresIn:'1d'});
+// Author Login
+authorApp.post('/authorlogin', expressAsyncHandler(async (req, res) => {
+    const authorCredObj = req.body;
+    const dbAuthor = await authorsCollection.findOne({ username: authorCredObj.username });
 
-            res.send({message:"author login successful",token:token,user:dbAuthor});
+    if (!dbAuthor) {
+        res.status(404).send({ message: "Invalid author" });
+    } else {
+        const isPasswordCorrect = await bcryptjs.compare(authorCredObj.password, dbAuthor.password);
+        if (!isPasswordCorrect) {
+            res.status(401).send({ message: "Incorrect password" });
+        } else {
+            const token = jwt.sign({ username: dbAuthor.username }, process.env.SK_user, { expiresIn: '1d' });
+            res.send({ message: "Author login successful", token, user: dbAuthor });
         }
     }
-})
+}));
 
+// Add New Article
+authorApp.post('/article', verifyToken, expressAsyncHandler(async (req, res) => {
+    const newArticle = req.body;
 
-// adding new article by author(protected)
-authorApp.post('/article',verifyToken,expressAsyncHandler(async(req,res)=>{
-    const newArticle=req.body;
+    if (!newArticle.title || !newArticle.content) {
+        return res.send({ message: "Title and content are required." });
+    }
 
-    //post it in articlesCollections
-    await articlesCollection.insertOne(newArticle);
-    res.send({message:"new Article is created"});
+    try {
+        await articlesCollection.insertOne(newArticle);
+        res.status(201).send({ message: "New article created successfully" });
+    } catch (error) {
+        res.status(500).send({ message: "Failed to create article" });
+    }
+}));
 
-}))
-
-//modify article by author(protected)
-authorApp.put('/article',verifyToken,expressAsyncHandler(async(req,res)=>{
-    const modifiedArticle=req.body;
+// Modify Article
+authorApp.put('/article', verifyToken, expressAsyncHandler(async (req, res) => {
+    const modifiedArticle = req.body;
+    const result = await articlesCollection.updateOne({ articleId: modifiedArticle.articleId }, { $set: modifiedArticle });
     
-    //update by article id
-    let result = await articlesCollection.updateOne({articleId:modifiedArticle.articleId},{$set:{...modifiedArticle}})
-    console.log(result)
-    res.send({message:"article modified"})
-}))
+    res.send({ message: result.modifiedCount ? "Article modified" : "Article not found" });
+}));
 
-//delete article by articleId
-        //soft delete is modifying action we just hide the article, instead deleteing, for restoring it later.
+// Soft Delete Article
+authorApp.put('/article/:articleId', verifyToken, expressAsyncHandler(async (req, res) => {
+    const articleIdFromUrl = req.params.articleId;
+    const result = await articlesCollection.updateOne({ articleId: articleIdFromUrl }, { $set: { status: false } });
 
-authorApp.put('/article/:articleId',verifyToken,expressAsyncHandler(async(req,res)=>{
-    const articleIdFromUrl=req.params.articleId;
+    res.send({ message: result.modifiedCount ? "Article deleted" : "Article not found" });
+}));
 
-    const articleToDelete=req.body;
-
-    let modifiedResults=await articlesCollection.updateOne({articleId:articleIdFromUrl},{$set:{...articleToDelete}})
-    res.send({message:"article deleted"});
-    console.log(modifiedResults)
-}))
-
-
-
-//to view all articles **by author**(protected)
-authorApp.get('/view-articles/:username',verifyToken,expressAsyncHandler(async(req,res)=>{
-    
+// View All Articles by Author
+authorApp.get('/view-articles/:username', verifyToken, expressAsyncHandler(async (req, res) => {
     const authorName = req.params.username;
+    const articlesList = await articlesCollection.find({ username: authorName, status: true }).toArray();
 
+    res.send({ message: "All articles", payload: articlesList });
+}));
 
-    let articlesList = await articlesCollection.find({$and:[{username:authorName},{status:true}]}).toArray();
-    res.send({message:"all articles",payload:articlesList});
-}))
-
-//export authorApp
-module.exports =authorApp;
+module.exports = authorApp;

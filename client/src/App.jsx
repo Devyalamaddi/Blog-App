@@ -8,6 +8,8 @@ import UserProfile from './pages/UserProfile';
 import AdminProfile from './pages/AdminProfile';
 import AuthorProfile from './pages/AuthorProfile';
 import {} from './Context/UserContext';
+import NewArticle from './components/NewArticle';
+import Articles from './components/Articles';
 
 function App() {
   const browserObj=createBrowserRouter([
@@ -37,8 +39,19 @@ function App() {
         },
         {
           path:'authorprofile/:username',
-          element:<AuthorProfile/>
+          element:<AuthorProfile/>,
+          children:[
+            {
+              path:'',
+              element:<Articles/>
+            },
+            {
+              path:'article',
+              element:<NewArticle/>
+            }
+          ]
         }
+        
       ]
     }
   ])

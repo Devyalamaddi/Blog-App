@@ -6,7 +6,7 @@ import axios from 'axios';
 
 function NewArticle() {
     const { register, handleSubmit, reset, formState: { errors, isValid } } = useForm({ mode: 'onBlur' });
-    const { currentUser } = useContext(UserContextObj);
+    const { currentUser,count,setCount } = useContext(UserContextObj);
     const token = localStorage.getItem('token');
 
     // Create axios instance with token
@@ -28,6 +28,7 @@ function NewArticle() {
         try {
             const res = await axiosWithToken.post('http://localhost:4000/author-api/article', articleObj);
             console.log("Response from NewArticle:", res.data); // Fixed to use res.data
+            setCount(count+1);
             reset(); // Reset form only if submission is successful
         } catch (error) {
             console.error("Error submitting new article:", error.response.data); // Log error details

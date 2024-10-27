@@ -41,10 +41,7 @@ function App() {
           path:'authorprofile/:username',
           element:<AuthorProfile/>,
           children:[
-            {
-              path:'',
-              element:<Articles/>
-            },
+            
             {
               path:'article',
               element:<NewArticle/>

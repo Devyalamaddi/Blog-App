@@ -74,7 +74,7 @@ authorApp.put('/article', verifyToken, expressAsyncHandler(async (req, res) => {
 authorApp.put('/article/:articleId', verifyToken, expressAsyncHandler(async (req, res) => {
     const articleIdFromUrl = req.params.articleId;
     const result = await articlesCollection.updateOne({ articleId: articleIdFromUrl }, { $set: { status: false } });
-
+    console.log("res from api",result);
     res.send({ message: result.modifiedCount ? "Article deleted" : "Article not found" });
 }));
 

@@ -39,7 +39,7 @@ function AuthorProfile() {
 
   useEffect(() => {
     getArticleList();
-  }, [currentUser, count]);
+  }, [currentUser,count]);
 
   const scrollToArticle = () => {
     const articleSection = document.getElementById('article-section');
@@ -84,16 +84,16 @@ function AuthorProfile() {
             ) : articleList.length === 0 ? (
               <p className="lead text-secondary">No articles.</p>
             ) : (
-              articleList.map((ele, index) => (
+              [...articleList].reverse().map((ele, index) => (
                 ele.status && (
                   <div className="card" key={index} style={{ margin: '10px', padding: '10px', border: '1px solid #ddd' }}>
                     <div className="d-flex justify-content-between">
                       <h1 className="text-primary display-6"><strong className='text-black'>Title:</strong> {ele.title}</h1>
                       <div className="d-flex gap-4">
-                        <button className="w-fit middle none center rounded-lg bg-green-500 py-1 px-4 text-white shadow-md shadow-green-500/20 transition-all hover:shadow-lg hover:shadow-pink-500/40" data-ripple-light="true">
+                        <button className="w-fit middle none center rounded-lg bg-green-500 py-1 px-4 h-10 text-white shadow-md shadow-green-500/20 transition-all hover:shadow-lg hover:shadow-pink-500/40" data-ripple-light="true">
                           <BiSolidEditAlt />
                         </button>
-                        <button className="w-fit middle none center rounded-lg bg-pink-500 py-1 px-4 text-white shadow-md shadow-pink-500/20 transition-all hover:shadow-lg hover:shadow-pink-500/40" data-ripple-light="true" onClick={() => deleteArticle(ele)}>
+                        <button className="w-fit middle none center rounded-lg bg-pink-500 py-1 px-4 h-10 text-white shadow-md shadow-pink-500/20 transition-all hover:shadow-lg hover:shadow-pink-500/40" data-ripple-light="true" onClick={() => deleteArticle(ele)}>
                           <AiOutlineDelete />
                         </button>
                       </div>

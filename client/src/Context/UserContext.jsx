@@ -83,7 +83,7 @@ function UserContext({ children }) {
 
 
   function logout() {
-    localStorage.removeItem('currentUser');
+    localStorage.clear();
     setLoginStatus(false);
     setCurrentUser(null);
   }

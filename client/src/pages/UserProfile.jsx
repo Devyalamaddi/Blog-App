@@ -1,6 +1,6 @@
 import React,{useContext} from 'react'
 import {UserContextObj} from '../Context/UserContext';
-import { Link } from 'react-router-dom';
+import Articles from '../components/Articles';
 
 
 function UserProfile() {
@@ -11,9 +11,11 @@ function UserProfile() {
   }
   return (
     <div className="container">
-      <h1 className="display-3">{currentUser.username}</h1>
-      <h3 className="display-5">{currentUser.email}</h3>
-      <Link to ="article" className='text-green-800'>New article</Link>
+      <h1 className="display-6">Welcome, <span className="text-green-400">{currentUser.username}</span>!</h1>
+      <p className="text-gray-500">{currentUser.email}</p>
+      <div className="px-4 mx-auto border-black shadow">
+        <Articles/>
+      </div>
     </div>
   )
 }

@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const expressAsyncHandler = require('express-async-handler');
 require('dotenv').config();
 const verifyToken = require('../middlewares/verifyToken');
+const {ObjectId} =require('mongodb');
 
 let authorsCollection;
 let articlesCollection;
@@ -72,8 +73,13 @@ authorApp.put('/article', verifyToken, expressAsyncHandler(async (req, res) => {
 
 // Soft Delete Article
 authorApp.put('/article/:articleId', verifyToken, expressAsyncHandler(async (req, res) => {
-    const articleIdFromUrl = req.params.articleId;
-    const result = await articlesCollection.updateOne({ articleId: articleIdFromUrl }, { $set: { status: false } });
+    const articleIdFromUrl = Number(req.params.articleId);
+    // Check if articleIdFromUrl is a valid ObjectId, then match by _id
+    // const query = ObjectId.isValid(articleIdFromUrl) 
+    //   ? { _id: new ObjectId(articleIdFromUrl) } 
+    //   : { articleId: articleIdFromUrl };
+
+    const result = await articlesCollection.updateOne({ articleId: articleIdFromUrl },{ $set: { status: false } });
     console.log("res from api",result);
     res.send({ message: result.modifiedCount ? "Article deleted" : "Article not found" });
 }));

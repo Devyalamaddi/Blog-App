@@ -85,11 +85,21 @@ userApp.get('/view-articles',verifyToken,expressAsyncHandler(async(req,res)=>{
 
 }))
 
+// get articles by articleId
+userApp.get('/view-articles/:articleId',verifyToken,expressAsyncHandler(async(req,res)=>{
+    let articleIdFromUrl = Number(req.params.articleId);
+
+    let article = await articlesCollection.find({articleId:articleIdFromUrl,status:true}).toArray()
+
+    res.send({message:"Article",payload:article})
+
+}))
+
 
 //post comments for an article by articleId(protected)
 userApp.post('/comment/:articleId',verifyToken,expressAsyncHandler(async(req,res)=>{
     const userComment = req.body
-    articleIdFromUrl = req.params.articleId
+    articleIdFromUrl = Number(req.params.articleId)
     //insert userComment obj in comment array in articlesCollection
  let result = await articlesCollection.updateOne({$and:[{articleId:articleIdFromUrl},{status:true}]},{$addToSet:{comments:userComment}})
  res.send({message:"comment posted"})

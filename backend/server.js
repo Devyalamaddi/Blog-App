@@ -1,63 +1,59 @@
-//create express app
-const exp = require('express')
-const app = exp()
-require('dotenv').config()//process.env.PORT
 
-const mongoClient = require('mongodb').MongoClient;
-const path = require('path')
+const express = require('express');
+const mongoose = require('mongoose');
+const dotenv = require('dotenv');
+const path = require('path');
 
-//deploy react build in this server
-app.use(exp.static(path.join(__dirname,'../client/dist')))
+// Load environment variables
+dotenv.config();
 
-//connect to DB
-mongoClient.connect(process.env.DB_URL)
-.then(client=>{
+// Create Express app
+const app = express();
+const cors = require('cors');
+app.use(cors(
+    {
+        origin: 'http://localhost:5173',
+        credentials: true
+    }
+));
 
-    const blogappdb = client.db('blogappdb')
+// Serve React build files
+app.use(express.static(path.join(__dirname, '../client/dist')));
+console.log(path.join(__dirname, '../client/dist'));
 
-    const usersCollection = blogappdb.collection("usersCollection")
-    const adminsColecction = blogappdb.collection("adminsCollection")
-    const authorsColecction = blogappdb.collection("authorsCollection")
-    const articlesCollection = blogappdb.collection("articlesCollection")
 
-    app.set('usersCollection',usersCollection);
-    app.set('adminsCollection',adminsColecction);
-    app.set('authorsCollection',authorsColecction);
-    app.set('articlesCollection',articlesCollection);
 
-    console.log("DB connection success")
+// Middleware to parse JSON request body
+app.use(express.json());
+
+// Import API routes
+const authorApp = require('./APIs/author-api');
+const adminApp = require('./APIs/admin-api');
+const userApp = require('./APIs/user-api');
+
+// Route API requests
+app.use('/user-api', userApp);
+app.use('/author-api', authorApp);
+app.use('/admin-api', adminApp);
+
+// Handle page refresh
+app.use((req, res, next) => {
+    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+});
+
+// Express error handler
+app.use((err, req, res, next) => {
+    res.status(500).send({ errorMessage: 'error', payload: err.message });
+});
+
+// Assign port number
+const port = process.env.PORT || 4000;
+// app.listen(port, () => console.log(`Web server running on port ${port}`));
+
+// Connect to MongoDB using Mongoose
+mongoose.connect(process.env.DB_URL)
+.then(() => {
+    console.log("Database connected"),
+    app.listen(port, () => console.log(`Web server running on port ${port}`))
 })
-.catch(err=>console.log("error in connection: ",err.message ));
-
-
-//to parse the body of req
-app.use(exp.json());
-
-// import api Routes
-const authorApp =require('./APIs/author-api')
-const adminApp = require('./APIs/admin-api')
-const userApp = require('../../blog-app/backend/APIs/user-api')
-
-//if path starts with user-api, send req to userApp
-app.use('/user-api',userApp)
-
-//if path starts with author-api, send req to authorApp
-app.use('/author-api',authorApp)
-
-//if path starts with admin-api, send req to adminApp
-app.use('/admin-api',adminApp)
-
-//deals with page refresh
-app.use((req,res,next)=>{
-    res.sendFile(path.join(__dirname,'../client/dist/index.html'))
-})
-
-
-//express error handler
-app.use((err,req,res,next)=>{
-    res.send({errorMessage:"error", payload:err.message});
-})
-
-//assign port number
-const port=process.env.PORT || 5000;
-app.listen(port,()=>console.log(`web server running on port ${port}`));
+.catch(err => console.log('Error in connection:', err.message));

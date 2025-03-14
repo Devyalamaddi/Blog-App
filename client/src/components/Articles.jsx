@@ -1,15 +1,15 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { UserContextObj } from '../Context/UserContext';
 import axios from 'axios';
-import { get } from 'react-hook-form';
 
 function Articles() {
   const { currentUser, setCurrentUser } = useContext(UserContextObj);
   const savedUser = localStorage.getItem('currentUser');
-  const [articleList, setArticleList] = useState([]); // Initialize as empty array
+  const [articleList, setArticleList] = useState([]);
   const [error, setError] = useState(null);
-  const navigate=useNavigate();
+  const [loading, setLoading] = useState(true); // ✅ Added loading state
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (savedUser) {
@@ -25,68 +25,70 @@ function Articles() {
   async function getArticleList() {
     try {
       const res = await axiosWithToken.get(`http://localhost:4000/user-api/view-articles`);
-      // console.log(res);
-      if(res.data.message==="Articles list"){
+      if (res.data.message === "Articles list") {
         setArticleList(res.data.payload);
       }
     } catch (err) {
-      console.error(err);
       setError("Failed to load articles. Please try again later.");
+    } finally {
+      setLoading(false); // ✅ Hide loader once data is fetched
     }
   }
-  //   getArticleList();
+
   useEffect(() => {
-      getArticleList()
+    getArticleList();
   }, []);
 
-  async function viewArticle(articleId) {
-    // console.log(articleId);
+  function viewArticle(articleId) {
     navigate(`/articleById/${articleId}`);
   }
 
   if (!currentUser) {
     return (
-      <div className="container">
-        <h1 className="text-warning display-4 fst-italic mt-40%">Please log in to view this profile.</h1>
+      <div className="flex justify-center items-center h-screen">
+        <h1 className="text-warning text-3xl font-semibold">Please log in to view this profile.</h1>
       </div>
     );
   }
 
   return (
-    <div className="container">
-      
-      <div className="p-4">
-        <div className="mb-4">
-          <h3 className="text-center text-violet-700">Articles</h3>
-          <div className="row w-9/12 mx-auto">
-            {error ? (
-              <p className="lead text-danger">{error}</p>
-            ) : articleList && articleList.length === 0 ? (
-              <p className="lead text-secondary">No articles.</p>
-            ) : (
-              articleList.map((ele, index) => (
-                ele.status && (
-                  <div className="card" key={index} style={{ margin: '10px', padding: '10px', border: '1px solid #ddd' }}>
-                    <h1 className="text-primary"><strong className="text-black">Title:</strong> {ele.title}</h1>
-                    <div className="d-flex justify-content-between align-items-center">
-                      <p className="text-violet-600">By: <b>{ele.username}</b></p>
+    <div className="container mx-auto p-4">
+      <h3 className="text-center text-primary font-bold text-2xl mb-4">📜 Articles</h3>
 
-                    </div>
-                    <div className="rounded-pill border-secondary bg-gray-400 w-fit opacity-70">
-                      <p className="text-center pt-1 pb-1 px-3">{ele.category}</p>
-                    </div>
-                    <p className="lead p-2 text-gray-800">
-                      {ele.content.slice(0, 30)}...
-                    </p>
-                    <button className='btn btn-2 btn-outline-success' onClick={()=>viewArticle(ele.articleId)}>
-                      view
-                    </button>
-                  </div>
-                )
-              ))
-            )}
-          </div>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {loading ? (
+          // ✅ Loading Skeleton
+          [...Array(3)].map((_, index) => (
+            <div key={index} className="animate-pulse bg-gray-300 dark:bg-gray-700 p-4 rounded-lg shadow-md h-40"></div>
+          ))
+        ) : error ? (
+          <p className="text-red-500 font-medium">{error}</p>
+        ) : articleList.length === 0 ? (
+          <p className="text-gray-500 text-center">No articles available.</p>
+        ) : (
+          articleList.map((ele, index) => (
+            ele.status && (
+              <div key={index} className="bg-card p-4 shadow-md rounded-lg border border-card-border transition-transform transform hover:scale-105">
+                <h1 className="text-lg font-bold text-primary">
+                  <strong className="text-text-primary">Title:</strong> {ele.title}
+                </h1>
+                <p className="text-secondary mt-2">By: <b>{ele.username}</b></p>
+                <div className="inline-block bg-gray-300 dark:bg-gray-600 text-sm rounded-full px-3 py-1 mt-2 opacity-75">
+                  {ele.category}
+                </div>
+                <p className="text-gray-700 dark:text-gray-300 mt-2">
+                  {ele.content.slice(0, 50)}...
+                </p>
+                <button
+                  className="w-full mt-3 py-2 px-4 text-white bg-primary hover:bg-primary-hover transition rounded-lg"
+                  onClick={() => viewArticle(ele.articleId)}
+                >
+                  View Article
+                </button>
+              </div>
+            )
+          ))
+        )}
       </div>
     </div>
   );

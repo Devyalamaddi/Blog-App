@@ -8,19 +8,9 @@ const expressAsyncHandler = require('express-async-handler');
 const jwt = require('jsonwebtoken')
 require('dotenv').config();
 const verifyToken=require('../middlewares/verifyToken');
+const User = require('../models/userModel');
+const Article = require('../models/articleModel');
 
-// userApp.get('/test-user',(req,res)=>{
-//     res.send({message:"This is from user api"});
-// })
-
-//get usersCollection
-let usersCollection;
-let articlesCollection;
-userApp.use((req,res,next)=>{
-    usersCollection =req.app.get('usersCollection');
-    articlesCollection = req.app.get("articlesCollection")
-    next()
-})
 
 //user registration route(public)
 userApp.post('/userregistration', expressAsyncHandler(async(req,res)=>{
@@ -31,7 +21,7 @@ userApp.post('/userregistration', expressAsyncHandler(async(req,res)=>{
 
     //check for duplicate user based on username
 
-    const dbUser = await usersCollection.findOne({username:newUser.username})
+    const dbUser = await User.findOne({username:newUser.username})
     if (dbUser !== null) res.send({message:"User existed"});
     else{
         //hash the password
@@ -41,7 +31,7 @@ userApp.post('/userregistration', expressAsyncHandler(async(req,res)=>{
         newUser.password=hashedpassword;
 
         //create user in db
-        await usersCollection.insertOne(newUser)
+        await User.insertOne(newUser)
 
         //send res
         res.send({message:"user Created"})
@@ -55,22 +45,22 @@ userApp.post('/userlogin',expressAsyncHandler(async(req,res)=>{
 
     const userCredObj = req.body;
 
-    const dbUser = await usersCollection.findOne({username:userCredObj.username})
+    const dbUser = await User.findOne({username:userCredObj.username})
+    if(!dbUser.status){
+        dbUser.status=true;
+    }
 
     if (dbUser === null){
-        res.send({message:"invalid username"})
-    }else{
-        
-        const check = bcryptjs.compare(userCredObj.password,dbUser.password)
-
-        if (check===false){
-            res.send({message:"incorrect password"})
-        }else{
-            const token=jwt.sign({username:dbUser.username},process.env.SK_user,{expiresIn:'1d'})
-            res.send({message:"login successful",token:token,user:dbUser});
-
-        }
+       return res.send({message:"invalid username"})
     }
+        
+    const check = bcryptjs.compare(userCredObj.password,dbUser.password)
+
+    if (check===false){
+        return res.send({message:"incorrect password"})
+    }
+    const token=jwt.sign({username:dbUser.username},process.env.SK_user,{expiresIn:'1d'})
+    return res.send({message:"login successful",token:token,user:dbUser});
 }))
 
 
@@ -79,7 +69,7 @@ userApp.post('/userlogin',expressAsyncHandler(async(req,res)=>{
 userApp.get('/view-articles',verifyToken,expressAsyncHandler(async(req,res)=>{
 
 
-    let articlesList = await articlesCollection.find({status:true}).toArray()
+    let articlesList = await Article.find({status:true})
 
     res.send({message:"Articles list",payload:articlesList})
 
@@ -89,7 +79,7 @@ userApp.get('/view-articles',verifyToken,expressAsyncHandler(async(req,res)=>{
 userApp.get('/view-articles/:articleId',verifyToken,expressAsyncHandler(async(req,res)=>{
     let articleIdFromUrl = Number(req.params.articleId);
 
-    let article = await articlesCollection.find({articleId:articleIdFromUrl,status:true}).toArray()
+    let article = await Article.find({articleId:articleIdFromUrl,status:true})
 
     res.send({message:"Article",payload:article})
 
@@ -100,11 +90,13 @@ userApp.get('/view-articles/:articleId',verifyToken,expressAsyncHandler(async(re
 userApp.post('/comment/:articleId',verifyToken,expressAsyncHandler(async(req,res)=>{
     const userComment = req.body
     articleIdFromUrl = Number(req.params.articleId)
-    //insert userComment obj in comment array in articlesCollection
- let result = await articlesCollection.updateOne({$and:[{articleId:articleIdFromUrl},{status:true}]},{$addToSet:{comments:userComment}})
+    //insert userComment obj in comment array in Article
+ let result = await Article.updateOne({$and:[{articleId:articleIdFromUrl},{status:true}]},{$addToSet:{comments:userComment}})
  res.send({message:"comment posted"})
- console.log(result)
+//  console.log(result)
 }))
+
+
 
 //export userApp
 module.exports =userApp;

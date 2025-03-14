@@ -1,76 +1,64 @@
-// create admin-api app
-
-const exp = require('express')
-const adminApp = exp.Router() //mini-express app so Router
-
+const express = require('express');
+const adminApp = express.Router();
 const expressAsyncHandler = require('express-async-handler');
 const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-require('dotenv').config();
+const dotenv = require('dotenv');
+const mongoose = require('mongoose');
+const Admin = require('../models/userModel'); // Import Admin model (using UserSchema)
+const Article = require('../models/articleModel'); // Import Article model
 
-// adminApp.get('/test-admin',(req,res)=>{
-//     res.send({message:"This is from admin api"});
-// })
+dotenv.config();
 
-let adminsCollection;
-adminApp.use((req,res,next)=>{
-    adminsCollection=req.app.get('adminsCollection');
-    next();
-})
-
-adminApp.post('/adminregistration',expressAsyncHandler(async(req,res)=>{
-    // console.log(req.body)
-
+// Admin Registration Route
+adminApp.post('/adminregistration', expressAsyncHandler(async (req, res) => {
     const newAdmin = req.body;
 
-    const dbAdmin = await adminsCollection.findOne({username:newAdmin.username})
+    const dbAdmin = await Admin.findOne({ username: newAdmin.username, userType: 'admin' });
 
-    if (dbAdmin !==null){
-        res.send({message:"admin exists"})
-    }else{
-        const hashedpassword = await bcryptjs.hash(newAdmin.password,7);
+    if (dbAdmin) {
+        res.status(400).send({ message: "Admin already exists" });
+    } else {
+        const hashedPassword = await bcryptjs.hash(newAdmin.password, 7);
+        newAdmin.password = hashedPassword;
+        newAdmin.userType = 'admin';
 
-        newAdmin.password = hashedpassword;
+        const createdAdmin = new Admin(newAdmin);
+        await createdAdmin.save();
 
-        await adminsCollection.insertOne(newAdmin);
-
-        res.send({message:"admin created"});
+        res.status(201).send({ message: "Admin created successfully" });
     }
 }));
 
-//admin login route
-
-adminApp.post('/adminlogin',expressAsyncHandler(async(req,res)=>{
-    // console.log(req.body)
+// Admin Login Route
+adminApp.post('/adminlogin', expressAsyncHandler(async (req, res) => {
     const adminCredObj = req.body;
 
-    const dbAdmin = await adminsCollection.findOne({username:adminCredObj.username});
+    const dbAdmin = await Admin.findOne({ username: adminCredObj.username, userType: 'admin' });
 
-    if (dbAdmin === null){
-        res.send({message:"invalid Admin"});
-    }else{
-
-        const check =await bcryptjs.compare(adminCredObj.password,dbAdmin.password);
-        // console.log(check)
-        if (check===false){
-            res.send({message:"incorrect password"});
-        }else{
-            const token = jwt.sign({username:dbAdmin.username},process.env.SK_admin,{expiresIn:'1d'});
-            res.send({message:"admin Login successful",token:token,user:dbAdmin});
+    if (!dbAdmin) {
+        res.status(401).send({ message: "Invalid Admin" });
+    } else {
+        const isMatch = await bcryptjs.compare(adminCredObj.password, dbAdmin.password);
+        if (!isMatch) {
+            res.status(401).send({ message: "Incorrect password" });
+        } else {
+            const token = jwt.sign({ username: dbAdmin.username, userType: 'admin' }, process.env.SK_admin, { expiresIn: '1d' });
+            res.status(200).send({ message: "Admin login successful", token, user: dbAdmin });
         }
     }
-}))
+}));
 
-//to view all articles
-adminApp.get('/view-articles',expressAsyncHandler(async(req,res)=>{
-    const articlesCollection = req.app.get('articlesCollection');
+// View all articles (only published ones)
+adminApp.get('/view-articles', expressAsyncHandler(async (req, res) => {
+    const articlesList = await Article.find({ status: true });
+    res.status(200).send({ message: "All articles", payload: articlesList });
+}));
 
-    let articlesList = await articlesCollection.find({status:true}).toArray();
+//display the disabled users list
+adminApp.get('/view-disabled-users', expressAsyncHandler(async (req, res) => {
+    const disabledUsersList = await Admin.find({ status: false });
+    res.status(200).send({ message: "All disabled users", payload: disabledUsersList });
+}));
 
-    res.send({message:"all articles",payload:articlesList});
-}))
-
-
-
-//export adminApp
-module.exports =adminApp;
+module.exports = adminApp;

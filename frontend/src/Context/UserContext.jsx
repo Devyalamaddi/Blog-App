@@ -15,7 +15,7 @@ function UserContext({ children }) {
 
   async function registerUser(userObj) {
     try {
-      const res = await axios.post('http://localhost:4000/user-api/userregistration', userObj);
+      const res = await axios.post('https://blog-app-backend-17rk.onrender.com/user-api/userregistration', userObj);
       setUsers([...users, res.data]);
       return res.data.message;
     } catch (err) {
@@ -26,7 +26,7 @@ function UserContext({ children }) {
 
   async function registerAdmin(userObj) {
     try {
-      const res = await axios.post('http://localhost:4000/admin-api/adminregistration', userObj);
+      const res = await axios.post('https://blog-app-backend-17rk.onrender.com/admin-api/adminregistration', userObj);
       setAdmins([...admins, res.data]);
       return res.data.message;
     } catch (err) {
@@ -37,7 +37,7 @@ function UserContext({ children }) {
 
   async function registerAuthor(userObj) {
     try {
-      const res = await axios.post('http://localhost:4000/author-api/authorregistration', userObj);
+      const res = await axios.post('https://blog-app-backend-17rk.onrender.com/author-api/authorregistration', userObj);
       setAuthors([...authors, res.data]);
       return res.data.message;
     } catch (err) {
@@ -48,7 +48,7 @@ function UserContext({ children }) {
 
   async function loginUser(userObj) {
     try {
-      const res = await axios.post('http://localhost:4000/user-api/userlogin', userObj);
+      const res = await axios.post('https://blog-app-backend-17rk.onrender.com/user-api/userlogin', userObj);
       setCurrentUser(res.data.user);
       return res;
     } catch (err) {
@@ -59,7 +59,7 @@ function UserContext({ children }) {
 
   async function loginAdmin(userObj) {
     try {
-      const res = await axios.post('http://localhost:4000/admin-api/adminlogin', userObj);
+      const res = await axios.post('https://blog-app-backend-17rk.onrender.com/admin-api/adminlogin', userObj);
       setCurrentUser(res.data.user);
       return res;
     } catch (err) {
@@ -70,7 +70,7 @@ function UserContext({ children }) {
 
   async function loginAuthor(userObj) {
     try {
-      const res = await axios.post('http://localhost:4000/author-api/authorlogin', userObj);
+      const res = await axios.post('https://blog-app-backend-17rk.onrender.com/author-api/authorlogin', userObj);
       const curUser = { ...res.data.user, token: res.data.token };
       localStorage.setItem('token', curUser.token);
       console.log(curUser);

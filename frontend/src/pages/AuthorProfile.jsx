@@ -25,7 +25,7 @@ function AuthorProfile() {
   async function getArticleList() {
     if (!currentUser) return;
     try {
-      const res = await axiosWithToken.get(`http://localhost:4000/author-api/view-articles/${currentUser.username}`);
+      const res = await axiosWithToken.get(`https://blog-app-backend-17rk.onrender.com/author-api/view-articles/${currentUser.username}`);
       if (res.status === 200 && res.data.payload) {
         setArticleList(res.data.payload);
       } else {

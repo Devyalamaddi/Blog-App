@@ -25,7 +25,7 @@ function NewArticle() {
         };
 
         try {
-            const res = await axiosWithToken.post('http://localhost:4000/author-api/article', articleObj);
+            const res = await axiosWithToken.post('https://blog-app-backend-17rk.onrender.com/author-api/article', articleObj);
             console.log("Response from NewArticle:", res.data);
             setCount(count + 1);
             reset(); // Reset form only if submission is successful

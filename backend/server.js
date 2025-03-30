@@ -14,12 +14,12 @@ app.use(cors({ origin: process.env.FRONTEND_URL || "http://localhost:5173", cred
 // Middleware
 app.use(express.json());
 
-// Serve frontend from the backend
-app.use(express.static(path.join(__dirname, '../frontend/dist')));
+// // Serve frontend from the backend
+// app.use(express.static(path.join(__dirname, '../frontend/dist')));
 
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/dist" , "index.html"));
-});
+// app.get('*', (req, res) => {
+//     res.sendFile(path.join(__dirname, "../frontend/dist" , "index.html"));
+// });
 
 // Import API routes
 const authorApp = require('./APIs/author-api');
